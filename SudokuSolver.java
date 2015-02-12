@@ -63,7 +63,7 @@ public class SudokuSolver {
 
 		// check if domain is unary
 		if ( isSolution(current) ) {
-			toDo.pop();
+			if ( toDo.size() > 0 ) toDo.pop();
 			solutions.push(current);
 			return;
 		} else if ( hasInvalidDomain( current ) ) {
