@@ -2,6 +2,7 @@ package sudoku;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 
 /**
@@ -43,8 +44,10 @@ public class SudokuSolver {
 
 		toDo.push( start );
 		Domains current = null;
+		int visited = 0;
 
 		while ( !toDo.isEmpty() ){
+			System.out.println("Stack popped: "+visited + " times, and is size "+ toDo.size());
 			current = toDo.peekFirst();
 
 			// iterate through all variables in board
@@ -53,9 +56,13 @@ public class SudokuSolver {
 					successor( start, i , j );
 				}
 			}
-
 		}
-		return solutions.peekFirst().toBoard();
+
+		if ( solutions.size() > 0 ){
+			return solutions.peekFirst().toBoard();
+		} else {
+			return board;
+		}
 	}
 
 	// reduce a domain and run arc consistency
@@ -67,23 +74,31 @@ public class SudokuSolver {
 			solutions.push(current);
 			return;
 		} else if ( hasInvalidDomain( current ) ) {
-			toDo.pop();
+			if ( toDo.size() > 0 ) toDo.pop();
 			return;
 		}
 
 		// Variable Has Multiple Values
 		else {
-			Domains firstHalf = current;
-			Domains secondHalf = current;
+			Domains firstHalf = new Domains( current );
+			Domains secondHalf = new Domains( current );
 			int domainLength = current.grid[row][col].size();
 
-			LinkedList<Integer> first = current.grid[row][col];
-			for ( int i = 0; i < domainLength / 2; i++ ){
+			LinkedList<Integer> first = new LinkedList<Integer>();
+			LinkedList<Integer> second = new LinkedList<Integer>();
+
+			for ( Integer temp: current.grid[row][col] ) {
+				first.add( new Integer( temp ) );
+				second.add( new Integer( temp ) );
+			}
+
+			int middle = domainLength / 2 ;
+
+			for ( int i = 0; i < middle; i++ ){
 				first.removeLast();
 			}
 
-			LinkedList<Integer> second = current.grid[row][col];
-			for ( int i = ( domainLength / 2 ); i < domainLength; i++ ){
+			for ( int i = middle; i < domainLength; i++ ){
 				second.removeFirst();
 			}
 
@@ -219,6 +234,17 @@ public class SudokuSolver {
 						grid[i][j] = new LinkedList<Integer>( Arrays.asList( 1, 2, 3, 4, 5, 6, 7, 8, 9 ));
 					} else {
 						grid[i][j] = new LinkedList<Integer>( Arrays.asList( board[i][j] ) );
+					}
+				}
+			}
+		}
+
+		public Domains( Domains other ){
+			for ( int i = 0; i < BOARD_SIZE; i++ ){
+				for ( int j = 0; j < BOARD_SIZE; j++ ){
+					this.grid[i][j] = new LinkedList<Integer>();
+					for ( Integer current: other.grid[i][j] ) {
+						this.grid[i][j].add( new Integer( current ) );
 					}
 				}
 			}
